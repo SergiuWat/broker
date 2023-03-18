@@ -10,4 +10,5 @@ public class BrokerApplication {
 		SpringApplication.run(BrokerApplication.class, args);
 	}
 
+
 }
