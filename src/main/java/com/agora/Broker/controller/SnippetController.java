@@ -24,7 +24,7 @@ import java.util.Map;
 public class SnippetController {
     private final DatabaseDetailsService databaseDetailsService;
 
-    @GetMapping("/get_snippet_true")
+    @GetMapping("/get_snippet/true")
     public ResponseEntity<JsonNode> get_snippet_true(@RequestBody JsonNode body) throws java.io.IOException, java.lang.InterruptedException, java.net.http.HttpConnectTimeoutException{
         ObjectMapper objectMapper = new ObjectMapper();
         Iterator<Map.Entry<String, JsonNode>> fetch = body.fields();
@@ -71,7 +71,7 @@ public class SnippetController {
         return ResponseEntity.status(HttpStatus.OK).body(jsonNode);
     }
 
-    @GetMapping("/get_snippet_false")
+    @GetMapping("/get_snippet/false")
     public ResponseEntity<JsonNode> get_snippet_false(@RequestBody JsonNode body) throws java.io.IOException, java.lang.InterruptedException, java.net.http.HttpConnectTimeoutException{
         ObjectMapper objectMapper = new ObjectMapper();
         Iterator<Map.Entry<String, JsonNode>> fetch = body.fields();
