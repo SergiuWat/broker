@@ -9,13 +9,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.yaml.snakeyaml.parser.ParserException;
+
 
 import java.io.IOException;
 import java.net.URI;
@@ -81,7 +81,6 @@ public class MetaController {
 
         return "Succes";
     }
-
     @GetMapping("/get_meta")
     public ResponseEntity<String> getMeta() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
