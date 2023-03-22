@@ -14,9 +14,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,57 +23,8 @@ public class SnippetController {
     private final DatabaseDetailsService databaseDetailsService;
 
     @GetMapping("/get_snippet/true")
-    public ResponseEntity<JsonNode> get_snippet_true(@RequestBody JsonNode body) throws java.io.IOException, java.lang.InterruptedException, java.net.http.HttpConnectTimeoutException{
+    public ResponseEntity<JsonNode> get_snippet_true(@RequestParam(name="databaseName") String dataBaseName, @RequestParam(name="databaseTable") String tableName) throws java.io.IOException, java.lang.InterruptedException, java.net.http.HttpConnectTimeoutException{
         ObjectMapper objectMapper = new ObjectMapper();
-        Iterator<Map.Entry<String, JsonNode>> fetch = body.fields();
-        if (!fetch.hasNext())
-        {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(objectMapper.nullNode());
-        }
-        String dataBaseName = "";
-        String tableName = "";
-        ArrayList<Boolean> okArray = new ArrayList<>();
-        boolean ok = true;
-        int counter = 0;
-        while (fetch.hasNext())
-        {
-            Map.Entry<String, JsonNode> dataFetched = fetch.next();
-            String key = dataFetched.getKey();
-            String value = dataFetched.getValue().asText();
-            if (key == "databaseName")
-            {
-                dataBaseName = value;
-                okArray.add(true);
-            }
-            if (key == "databaseTable")
-            {
-                tableName = value;
-                okArray.add(true);
-            }
-            counter++;
-
-        }
-        if (counter != 2)
-        {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(objectMapper.nullNode());
-        }
-        for (int i = 0; i < okArray.size(); i++)
-        {
-            if (okArray.size() != 2)
-            {
-                ok = false;
-                break;
-            }
-            if(!okArray.get(i))
-            {
-                ok = false;
-                break;
-            }
-        }
-        if (!ok)
-        {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(objectMapper.missingNode());
-        }
         HttpClient client = HttpClient.newBuilder().build();
         List<DatabaseDetails> databaseDetails = databaseDetailsService.query(dataBaseName, tableName);
         JsonNode jsonNode = objectMapper.nullNode();
@@ -103,63 +52,8 @@ public class SnippetController {
     }
 
     @GetMapping("/get_snippet/false")
-    public ResponseEntity<JsonNode> get_snippet_false(@RequestBody JsonNode body) throws java.io.IOException, java.lang.InterruptedException, java.net.http.HttpConnectTimeoutException{
+    public ResponseEntity<JsonNode> get_snippet_false(@RequestParam(name="databaseName") String dataBaseName, @RequestParam(name="databaseTable") String tableName, @RequestParam String format) throws java.io.IOException, java.lang.InterruptedException, java.net.http.HttpConnectTimeoutException{
         ObjectMapper objectMapper = new ObjectMapper();
-        Iterator<Map.Entry<String, JsonNode>> fetch = body.fields();
-        if (!fetch.hasNext())
-        {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(objectMapper.nullNode());
-        }
-        String dataBaseName = "";
-        String tableName = "";
-        String format = "";
-        ArrayList<Boolean> okArray = new ArrayList<>();
-        boolean ok = true;
-        int counter = 0;
-        while (fetch.hasNext())
-        {
-            Map.Entry<String, JsonNode> dataFetched = fetch.next();
-            String key = dataFetched.getKey();
-            String value = dataFetched.getValue().asText();
-            if (key == "databaseName")
-            {
-                dataBaseName = value;
-                okArray.add(true);
-            }
-            if (key == "databaseTable")
-            {
-                tableName = value;
-                okArray.add(true);
-            }
-            if (key == "format")
-            {
-                format = value.toLowerCase();
-                okArray.add(true);
-            }
-            counter++;
-        }
-        if (counter != 3)
-        {
-           return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(objectMapper.nullNode());
-        }
-        
-        for (int i = 0; i < okArray.size(); i++)
-        {
-            if (okArray.size() != 3)
-            {
-                ok = false;
-                break;
-            }
-            if(!okArray.get(i))
-            {
-                ok = false;
-                break;
-            }
-        }
-        if (!ok)
-        {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(objectMapper.missingNode());
-        }
         HttpClient client = HttpClient.newBuilder().build();
         List<DatabaseDetails> databaseDetails = databaseDetailsService.query(dataBaseName, tableName);
         JsonNode jsonNode = objectMapper.nullNode();
