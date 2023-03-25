@@ -6,6 +6,7 @@ import com.agora.Broker.Service.DatabaseDetailsService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -46,19 +47,19 @@ public class MetaController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         List<DatabaseDetails> allData = databaseDetailsService.getAll();
-        Map<String,ArrayList<String>> myMap = new HashMap<String,ArrayList<String>>();
-        //we store all databases uri and their coresponding tables
-        // in a hash map
+        Map<String,ArrayList<Map<String, String>>> myMap = new HashMap<>();
+        
         for(DatabaseDetails db : allData){
             String tableName = db.getTableName();
             String url = db.getUrl();
+            String size = db.getDataSize();
             if(!myMap.containsKey(url)){
-                ArrayList<String> tableNames = new ArrayList<String>();
-                tableNames.add(tableName);
+                ArrayList<Map<String, String>> tableNames = new ArrayList<>();
+                tableNames.add(Map.of(tableName, size));
                 myMap.put(url,tableNames);
             } else {
-                ArrayList<String> tableNameData = myMap.get(url);
-                tableNameData.add(tableName);
+                ArrayList<Map<String, String>> tableNameData = myMap.get(url);
+                tableNameData.add(Map.of(tableName, size));
                 myMap.put(url, tableNameData);
             }
         }
@@ -66,43 +67,61 @@ public class MetaController {
         HashMap <String,String> keywordsMap = new HashMap<String,String>();
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.nullNode();
-        Boolean checkTableField=false;
-        String searchBar = "air quality";
-        List<String> dataBases = new ArrayList<>();
-        Map<String, String> contexts = new HashMap<>();
-        dataBases.add("http://localhost:5000");
         String responseStr = "";
         HttpClient client = HttpClient.newBuilder().build(); // Create the HTTPClient
         try {
-            for(int i =0; i<dataBases.size();i++){
-                HttpRequest request = HttpRequest.newBuilder().GET().timeout(Duration.ofSeconds(5)).uri(URI.create(dataBases.get(i) + "/get_meta")).build();
+            for(Map.Entry<String, ArrayList<Map<String, String>>> entry : myMap.entrySet()){
+                if (entry.getKey().equals("http://localhost:8088"))
+                {
+                    continue;
+                }
+                String url = entry.getKey() + "/get_meta";
+                HttpRequest request = HttpRequest.newBuilder().GET().timeout(Duration.ofSeconds(5)).uri(URI.create(url)).build();
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 if (response.statusCode() != 200) {
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
                 }
                 else {
-                    jsonNode = objectMapper.readTree(response.body());
+                    String body = response.body();
+                    if (entry.getKey().equals("http://localhost:8084"))
+                    {
+                        body = response.body().replace("[", "\"").replace("]", "\"");
+                    }
+                    if (entry.getKey().equals("http://localhost:8082"))
+                    {
+                        body = response.body().replaceAll("schema", "@schema");
+                    }
+                    if (entry.getKey().equals("http://localhost:8087"))
+                    {
+                        body = response.body().replace("\r", "").replace("\n", "");
+                    }
+                    jsonNode = objectMapper.readTree(body);
                     Iterator<Map.Entry<String, JsonNode>> fields = jsonNode.fields();
                     Map.Entry<String, JsonNode> databaseName = fields.next();
                     JsonNode val = databaseName.getValue();
                     String dbNm = val.get("@schema").toString();
                     String dbName = Utils.removeFirstandLast(dbNm);
-                    System.out.println(dbName);
                     while (fields.hasNext()) {
                         Map.Entry<String, JsonNode> field = fields.next();
                         String fieldValue = field.getValue().asText().toLowerCase();
                         String fieldKey = field.getKey().toLowerCase();
-                        String dbLocation = dataBases.get(i);
-                        System.out.println(fieldKey);
-                        System.out.println(fieldValue);
+                        int index = 0;
+                        for (int i = 0; i < entry.getValue().size(); i++)
+                        {
+                            if (entry.getValue().get(i).containsKey(fieldKey))
+                            {
+                                index = i;
+                                break;
+                            }
+                        }
 
-//                        String fullFieldKey = dbName+"/"+fieldKey;
+
                         String fullFieldKey = (new StringBuilder()).append(dbName).append("/").append(fieldKey).toString();
-                        if(fieldKey.contains(q)){
-                           responseStr = "{ \"@context\":{\"@schema\":"+"\""+fullFieldKey+"\""+"}}";
+                        if(fieldKey.contains(q.toLowerCase())){
+                           responseStr = "{ \"@context\": { \"@schema\":"+"\""+fullFieldKey+"\""+" }, \"size\": " + entry.getValue().get(index).get(fieldKey) + " KB}";
                             return new ResponseEntity<>(responseStr,HttpStatus.OK);
-                        } else if (fieldValue.contains(q)){
-                            responseStr = "{ \"@context\":{\"@schema\":"+"\""+fullFieldKey+"\""+"}}";
+                        } else if (fieldValue.contains(q.toLowerCase())){
+                            responseStr = "{ \"@context\": { \"@schema\":"+"\""+fullFieldKey+"\""+" }, \"size\": " + entry.getValue().get(index).get(fieldKey) + " KB}";
                             return new ResponseEntity<>(responseStr,HttpStatus.OK);
                         }
                     }

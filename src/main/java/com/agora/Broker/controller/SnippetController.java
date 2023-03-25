@@ -22,7 +22,7 @@ import java.util.List;
 public class SnippetController {
     private final DatabaseDetailsService databaseDetailsService;
 
-    @GetMapping("/get_snippet/true")
+    @GetMapping("/get_snippet")
     public ResponseEntity<JsonNode> get_snippet_true(@RequestParam(name="databaseName") String dataBaseName, @RequestParam(name="databaseTable") String tableName) throws java.io.IOException, java.lang.InterruptedException, java.net.http.HttpConnectTimeoutException{
         ObjectMapper objectMapper = new ObjectMapper();
         HttpClient client = HttpClient.newBuilder().build();
@@ -51,7 +51,7 @@ public class SnippetController {
         return ResponseEntity.status(HttpStatus.OK).body(jsonNode);
     }
 
-    @GetMapping("/get_snippet/false")
+    @GetMapping("/get_dataset")
     public ResponseEntity<JsonNode> get_snippet_false(@RequestParam(name="databaseName") String dataBaseName, @RequestParam(name="databaseTable") String tableName, @RequestParam String format) throws java.io.IOException, java.lang.InterruptedException, java.net.http.HttpConnectTimeoutException{
         ObjectMapper objectMapper = new ObjectMapper();
         HttpClient client = HttpClient.newBuilder().build();
