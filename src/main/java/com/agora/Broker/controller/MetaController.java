@@ -34,12 +34,6 @@ public class MetaController {
 
     private final DatabaseDetailsService databaseDetailsService;
 
-
-    @GetMapping("/get_all")
-    public List<DatabaseDetails> getAll(){
-        return databaseDetailsService.getAll();
-    }
-
     @GetMapping("/search")
     public ResponseEntity<String> searchData(@RequestParam String q){
         if(q.length()==0)
@@ -48,7 +42,7 @@ public class MetaController {
         }
         List<DatabaseDetails> allData = databaseDetailsService.getAll();
         Map<String,ArrayList<Map<String, String>>> myMap = new HashMap<>();
-        
+
         for(DatabaseDetails db : allData){
             String tableName = db.getTableName();
             String url = db.getUrl();
