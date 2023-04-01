@@ -21,4 +21,6 @@ public class DatabaseDetails {
     private String dataSize;
 
     private String tableName;
+
+    private String dataType;
 }

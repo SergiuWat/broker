@@ -65,7 +65,7 @@ public class MetaController {
         HttpClient client = HttpClient.newBuilder().build(); // Create the HTTPClient
         try {
             for(Map.Entry<String, ArrayList<Map<String, String>>> entry : myMap.entrySet()){
-                if (entry.getKey().equals("http://localhost:8088"))
+                if (entry.getKey().equals("http://localhost:8088") || entry.getKey().equals("http://localhost:8086"))
                 {
                     continue;
                 }
