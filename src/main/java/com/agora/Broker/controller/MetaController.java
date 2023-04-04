@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +32,8 @@ import java.util.*;
 @RequiredArgsConstructor
 @RequestMapping("/")
 public class MetaController {
-
-    private final DatabaseDetailsService databaseDetailsService;
+    @Autowired
+    private DatabaseDetailsService databaseDetailsService;
 
     @GetMapping("/search")
     public ResponseEntity<String> searchData(@RequestParam String q){

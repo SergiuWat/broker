@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,19 +17,15 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.agora.Broker.controller.MetaController;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/")
 public class SnippetController {
-    private final DatabaseDetailsService databaseDetailsService;
+    @Autowired
+    private DatabaseDetailsService databaseDetailsService;
 
     @GetMapping("/get_snippet")
     public ResponseEntity<JsonNode> get_snippet(@RequestParam(name="databaseName") String dataBaseName, @RequestParam(name="databaseTable") String tableName) throws java.io.IOException, java.lang.InterruptedException, java.net.http.HttpConnectTimeoutException{
@@ -37,8 +34,10 @@ public class SnippetController {
         List<DatabaseDetails> allData = databaseDetailsService.getAll();
         String url = "";
         String tbName = "";
+        String dataType = "";
         for(DatabaseDetails db : allData){
             tbName = db.getTableName();
+            dataType = db.getDataType();
             String dbName = db.getDataBaseName();
             if (tbName.toLowerCase().contains(tableName.toLowerCase()) && dbName.toLowerCase().contains(dataBaseName.toLowerCase()))
             {
@@ -50,7 +49,7 @@ public class SnippetController {
         HttpClient client = HttpClient.newBuilder().build();
         JsonNode jsonNode = objectMapper.nullNode();
         try {
-            HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create(url + "/get_data?data_type=" + tbName + "&snippet=true")).build();
+            HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create(url + "/get_data?data_type=" + dataType + "&snippet=true")).build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200)
             {
